@@ -19,6 +19,8 @@
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.575.0",
     "mysql2": "^3.18.0",
+    "pg": "^8.20.0",
+    "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.7"
   },
   "devDependencies": {
