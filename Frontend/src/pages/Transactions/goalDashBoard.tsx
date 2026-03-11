@@ -11,7 +11,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { Pencil, Trash2 } from "lucide-react";
-import "./goalDashboard.css";
+import "./goalDashBoard.css";
 
 export interface GoalData {
   id: number;
