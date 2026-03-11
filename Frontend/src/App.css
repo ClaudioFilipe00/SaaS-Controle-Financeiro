@@ -1,0 +1,36 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+
+}
+
+html, body {
+  width: 100%;
+  overflow-x: hidden;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #0f172a; 
+}
+button, 
+input, 
+textarea, 
+select {
+  overflow: hidden !important;
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
+}
+
+button::-webkit-scrollbar,
+input::-webkit-scrollbar,
+textarea::-webkit-scrollbar {
+  display: none; 
+}
+
+input {
+  line-height: normal; 
+}
