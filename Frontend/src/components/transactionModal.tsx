@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import "./transactionModal.css";
+import {
+  getCategories,
+  createCategory,
+  createTransaction,
+} from "../services/api";
 
 interface Category {
   id: string;
@@ -20,11 +25,10 @@ const TransactionModal = ({ type, onClose, onSuccess }: Props) => {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("R$ 0,00");
 
-  const token = localStorage.getItem("token");
-
   const formatCurrency = (value: string) => {
     const cleanValue = value.replace(/\D/g, "");
     const numberValue = Number(cleanValue) / 100;
+
     return numberValue.toLocaleString("pt-BR", {
       style: "currency",
       currency: "BRL",
@@ -36,27 +40,14 @@ const TransactionModal = ({ type, onClose, onSuccess }: Props) => {
   };
 
   useEffect(() => {
-    fetch(`http://localhost:3000/categories?type=${type}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => setCategories(data))
-      .catch((err) => console.error(err));
-  }, [type, token]);
+    getCategories(type).then(setCategories);
+  }, [type]);
 
   const handleCreateCategory = async () => {
     if (!newCategory) return;
 
-    const response = await fetch("http://localhost:3000/categories", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name: newCategory, type }),
-    });
+    const created = await createCategory(newCategory, type);
 
-    const created = await response.json();
     setCategories((prev) => [...prev, created]);
     setSelectedCategory(created.id);
     setNewCategory("");
@@ -70,36 +61,15 @@ const TransactionModal = ({ type, onClose, onSuccess }: Props) => {
       return;
     }
 
-    try {
-      const response = await fetch("http://localhost:3000/transactions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          title,
-          amount: numericAmount,
-          category_id: selectedCategory,
-          type,
-          date: new Date(),
-        }),
-      });
+    await createTransaction({
+      title,
+      amount: numericAmount,
+      category_id: selectedCategory,
+      type,
+      date: new Date(),
+    });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.message || data.error || "Erro ao salvar transação");
-        return;
-      }
-
-      onSuccess();
-      setTitle("");
-      setAmount("R$ 0,00");
-      setSelectedCategory("");
-    } catch {
-      alert("Erro inesperado");
-    }
+    onSuccess();
   };
 
   return (
@@ -108,16 +78,16 @@ const TransactionModal = ({ type, onClose, onSuccess }: Props) => {
         <h2>{type === "income" ? "Novo Lucro" : "Novo Gasto"}</h2>
 
         <div className="tans-edit-form">
+
           <input
             type="text"
-            placeholder="Descrição (ex: Salário Abril)"
+            placeholder="Descrição"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
 
           <input
             type="text"
-            placeholder="Valor"
             value={amount}
             onChange={(e) => setAmount(formatCurrency(e.target.value))}
           />
@@ -128,28 +98,31 @@ const TransactionModal = ({ type, onClose, onSuccess }: Props) => {
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
               <option value="">Selecione uma categoria</option>
+
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}
                 </option>
               ))}
             </select>
-
-            <div className="tans-new-category-box">
-              <input
-                type="text"
-                placeholder="Nova categoria"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-              />
-              <button
-                className="tans-btn-add-category"
-                onClick={handleCreateCategory}
-              >
-                Adicionar
-              </button>
-            </div>
           </div>
+
+          <div className="tans-new-category-box">
+            <input
+              type="text"
+              placeholder="Nova categoria"
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+            />
+
+            <button
+              className="tans-btn-add-category"
+              onClick={handleCreateCategory}
+            >
+              Adicionar
+            </button>
+          </div>
+
         </div>
 
         <div className="tans-actions">
@@ -159,6 +132,7 @@ const TransactionModal = ({ type, onClose, onSuccess }: Props) => {
           >
             Salvar
           </button>
+
           <button
             className="tans-btn-cancel"
             onClick={onClose}
@@ -166,6 +140,7 @@ const TransactionModal = ({ type, onClose, onSuccess }: Props) => {
             Cancelar
           </button>
         </div>
+
       </div>
     </div>
   );

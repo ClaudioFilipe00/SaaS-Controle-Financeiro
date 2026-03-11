@@ -39,21 +39,15 @@ export const getYearlySummary = async (userId, year) => {
 };
 
 export const getAvailableYears = async (userId) => {
-  const years = await Transaction.findAll({
-    attributes: [
-      [
-        Sequelize.fn(
-          "DISTINCT",
-          Sequelize.fn("YEAR", Sequelize.col("created_at"))
-        ),
-        "year",
-      ],
-    ],
-    where: {
-      user_id: userId,
-    },
-    raw: true,
+
+  const [years] = await sequelize.query(`
+    SELECT DISTINCT EXTRACT(YEAR FROM created_at) AS year
+    FROM transactions
+    WHERE user_id = :userId
+    ORDER BY year
+  `, {
+    replacements: { userId },
   });
 
-  return years.map((item) => Number(item.year)).sort();
+  return years.map((y) => Number(y.year));
 };
