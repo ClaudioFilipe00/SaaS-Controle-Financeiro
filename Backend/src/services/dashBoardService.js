@@ -1,5 +1,6 @@
 import { Transaction } from "../models/transaction.js";
 import { Op, Sequelize } from "sequelize";
+import { sequelize } from "../config/database.js";
 
 export const getYearlySummary = async (userId, year) => {
   const transactions = await Transaction.findAll({
